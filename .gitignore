@@ -1,0 +1,26 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp/
+pytest-of-*/
+*.egg-info/
+.coverage
+htmlcov/
+.cache/
+matplotlib-*/
+.idea/
+.vscode/
+.DS_Store
+.env
+.gh-config/
+.gitmeta/
+
+# The official NASA source and generated artifacts are reproducible.
+data/raw/*
+data/interim/*
+data/processed/*
+reports/figures/*
+reports/*.json
+reports/*.csv
+artifacts/

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: aeroguard-ai
+    runtime: python
+    plan: starter
+    autoDeploy: false
+    buildCommand: pip install -e . && python -m aeroguard.cli day5
+    startCommand: uvicorn aeroguard.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: AEROGUARD_GENERATOR
+        value: local
+      - key: MPLCONFIGDIR
+        value: /tmp/matplotlib

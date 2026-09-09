@@ -1,0 +1,34 @@
+[
+  {
+    "query": "What do critical high elevated and routine remaining-life bands mean?",
+    "expected_chunk_id": "01_rul_interpretation#rul-risk-bands"
+  },
+  {
+    "query": "What should I do when the Random Forest and LSTM RUL estimates disagree?",
+    "expected_chunk_id": "01_rul_interpretation#model-disagreement"
+  },
+  {
+    "query": "Why is early healthy remaining useful life capped at 125 cycles?",
+    "expected_chunk_id": "01_rul_interpretation#capped-rul-target"
+  },
+  {
+    "query": "Which data quality checks must happen before interpreting engine risk?",
+    "expected_chunk_id": "02_sensor_review#data-quality-before-escalation"
+  },
+  {
+    "query": "Does a SHAP contribution prove that a sensor caused degradation?",
+    "expected_chunk_id": "02_sensor_review#shap-interpretation-limits"
+  },
+  {
+    "query": "Who has final authority for aircraft maintenance and operational decisions?",
+    "expected_chunk_id": "03_maintenance_triage#human-decision-authority"
+  },
+  {
+    "query": "Why does late warning risk matter even when RMSE improves?",
+    "expected_chunk_id": "04_model_governance#late-warning-risk"
+  },
+  {
+    "query": "What are the limitations of simulated C-MAPSS FD001 data?",
+    "expected_chunk_id": "04_model_governance#simulation-and-monitoring-limitations"
+  }
+]

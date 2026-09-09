@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AeroGuard predictive-maintenance operations console" />
+    <meta name="theme-color" content="#071018" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b151f'/%3E%3Cpath d='M15 44 27 17h10l12 27h-9l-2-6H26l-2 6h-9Zm14-13h6l-3-8-3 8Z' fill='%2343e3ea'/%3E%3C/svg%3E" />
+    <title>AeroGuard | Reliability Operations</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to dashboard</a>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <a class="brand" href="#overview" aria-label="AeroGuard overview">
+          <span class="brand-mark" aria-hidden="true"><i></i><b>AG</b></span>
+          <span class="brand-copy">
+            <strong>AeroGuard</strong>
+            <small>Reliability intelligence</small>
+          </span>
+        </a>
+
+        <nav aria-label="Dashboard sections">
+          <a class="nav-item active" href="#overview" data-section="overview" aria-label="Overview">
+            <span class="nav-number">01</span><span class="nav-label">Overview</span>
+          </a>
+          <a class="nav-item" href="#fleet" data-section="fleet" aria-label="Fleet queue">
+            <span class="nav-number">02</span><span class="nav-label">Fleet queue</span>
+          </a>
+          <a class="nav-item" href="#copilot" data-section="copilot" aria-label="Evidence brief">
+            <span class="nav-number">03</span><span class="nav-label">Evidence brief</span>
+          </a>
+          <a class="nav-item" href="#quality" data-section="quality" aria-label="Model quality">
+            <span class="nav-number">04</span><span class="nav-label">Model quality</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div class="scope-card">
+            <span class="scope-icon" aria-hidden="true">!</span>
+            <div><strong>Decision support</strong><p>Qualified human review remains mandatory.</p></div>
+          </div>
+          <div class="version-row"><span>FD001 workspace</span><span>v1.0</span></div>
+        </div>
+      </aside>
+
+      <main id="main-content">
+        <header class="topbar">
+          <div class="page-intro">
+            <div class="eyebrow-row">
+              <span class="eyebrow">NASA C-MAPSS · FD001</span>
+              <span class="live-tag"><i></i> Live evidence</span>
+            </div>
+            <h1>Fleet reliability control</h1>
+            <p>Prioritize engine reviews using verified model evidence and grounded guidance.</p>
+          </div>
+          <div class="header-actions">
+            <div class="system-state" id="system-state" aria-live="polite">
+              <span class="status-dot"></span>
+              <span><small>System status</small><strong>Connecting</strong></span>
+            </div>
+            <button type="button" class="action-button" id="refresh-data" aria-label="Refresh dashboard data">
+              <span class="refresh-icon" aria-hidden="true">↻</span><span class="button-label">Refresh data</span>
+            </button>
+          </div>
+        </header>
+
+        <section id="overview" class="kpi-grid" aria-label="Key indicators">
+          <article class="kpi-card skeleton-card" id="kpi-engines">
+            <div class="kpi-top"><span class="kpi-icon cyan" aria-hidden="true">Σ</span><span class="data-chip">Fleet</span></div>
+            <span class="kpi-label">Monitored engines</span>
+            <strong class="kpi-value">—</strong>
+            <span class="kpi-detail">Official test endpoints</span>
+          </article>
+          <article class="kpi-card critical skeleton-card" id="kpi-critical">
+            <div class="kpi-top"><span class="kpi-icon red" aria-hidden="true">!</span><span class="data-chip critical">Action</span></div>
+            <span class="kpi-label">Critical review</span>
+            <strong class="kpi-value">—</strong>
+            <span class="kpi-detail">Predicted RUL ≤ 15 cycles</span>
+          </article>
+          <article class="kpi-card skeleton-card" id="kpi-rmse">
+            <div class="kpi-top"><span class="kpi-icon amber" aria-hidden="true">±</span><span class="data-chip">Benchmark</span></div>
+            <span class="kpi-label">Deployment RMSE</span>
+            <strong class="kpi-value">—</strong>
+            <span class="kpi-detail">Lower error is better</span>
+          </article>
+          <article class="kpi-card skeleton-card" id="kpi-retrieval">
+            <div class="kpi-top"><span class="kpi-icon green" aria-hidden="true">✓</span><span class="data-chip">Grounding</span></div>
+            <span class="kpi-label">Retrieval Hit@3</span>
+            <strong class="kpi-value">—</strong>
+            <span class="kpi-detail">Eight labeled questions</span>
+          </article>
+        </section>
+
+        <section class="priority-banner" aria-live="polite">
+          <span class="priority-signal" aria-hidden="true"><i></i></span>
+          <div><strong id="priority-message">Loading fleet priorities…</strong><span id="priority-detail">Waiting for verified model outputs.</span></div>
+          <button type="button" class="text-button" id="review-critical">Review critical queue <span>→</span></button>
+        </section>
+
+        <section class="insight-grid" id="quality">
+          <article class="panel model-panel">
+            <div class="panel-heading">
+              <div><span class="eyebrow">Official benchmark</span><h2>Model performance</h2><p class="panel-subtitle">Capped endpoint RMSE · lower is better</p></div>
+              <span class="pill teal" id="deployment-pill">Loading</span>
+            </div>
+            <div id="model-bars" class="model-bars" aria-live="polite">
+              <div class="loading-line"></div><div class="loading-line short"></div>
+            </div>
+            <div class="governance-note"><span aria-hidden="true">i</span><p id="model-note">Loading model-governance decision…</p></div>
+          </article>
+
+          <article class="panel risk-panel">
+            <div class="panel-heading">
+              <div><span class="eyebrow">Current review load</span><h2>Fleet risk distribution</h2><p class="panel-subtitle">Deployment-model triage bands</p></div>
+              <span class="mono-stat" id="average-rul">— avg RUL</span>
+            </div>
+            <div class="risk-layout">
+              <div class="risk-donut" id="risk-donut" role="img" aria-label="Fleet risk distribution">
+                <div><strong id="donut-total">—</strong><span>engines</span></div>
+              </div>
+              <div class="risk-legend" id="risk-legend"></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="workspace-grid">
+          <article class="panel fleet-panel" id="fleet">
+            <div class="panel-heading fleet-heading">
+              <div><span class="eyebrow">Prioritized by deployed model</span><h2>Engine review queue</h2><p class="panel-subtitle">Select an engine to inspect its evidence.</p></div>
+              <span class="queue-badge" id="queue-count">Loading</span>
+            </div>
+
+            <div class="queue-toolbar">
+              <label class="search-box">
+                <span class="search-icon" aria-hidden="true">⌕</span>
+                <span class="sr-only">Search engine ID</span>
+                <input id="engine-search" inputmode="numeric" autocomplete="off" placeholder="Search engine ID" />
+                <button type="button" id="clear-search" aria-label="Clear engine search" hidden>×</button>
+              </label>
+              <label class="sort-box">
+                <span>Sort</span>
+                <select id="engine-sort" aria-label="Sort engine queue">
+                  <option value="predicted_rul:asc">Lowest RUL first</option>
+                  <option value="disagreement:desc">Largest disagreement</option>
+                  <option value="engine_id:asc">Engine ID</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="filter-row" role="group" aria-label="Filter by risk band">
+              <button type="button" class="filter active" data-risk="" aria-pressed="true">All</button>
+              <button type="button" class="filter" data-risk="critical" aria-pressed="false"><i class="critical"></i>Critical</button>
+              <button type="button" class="filter" data-risk="high" aria-pressed="false"><i class="high"></i>High</button>
+              <button type="button" class="filter" data-risk="elevated" aria-pressed="false"><i class="elevated"></i>Elevated</button>
+              <button type="button" class="filter" data-risk="routine" aria-pressed="false"><i class="routine"></i>Routine</button>
+            </div>
+
+            <div class="table-wrap" aria-live="polite">
+              <table>
+                <thead><tr><th>Engine</th><th>Review state</th><th>RF RUL</th><th>LSTM RUL</th><th>Difference</th><th><span class="sr-only">Open</span></th></tr></thead>
+                <tbody id="engine-table"><tr><td colspan="6"><div class="loading-line"></div></td></tr></tbody>
+              </table>
+            </div>
+            <div class="pagination">
+              <span id="page-summary">Loading…</span>
+              <div>
+                <button type="button" id="previous-page" class="page-button" aria-label="Previous page"><span>←</span> Previous</button>
+                <button type="button" id="next-page" class="page-button" aria-label="Next page">Next <span>→</span></button>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel copilot-panel" id="copilot">
+            <div class="panel-heading">
+              <div><span class="eyebrow">Grounded reliability copilot</span><h2 id="brief-title">Select an engine</h2><p class="panel-subtitle">Model facts first. Cited guidance second.</p></div>
+              <span class="pill" id="brief-risk">Waiting</span>
+            </div>
+            <div id="brief-content" class="brief-content" aria-live="polite">
+              <p>Choose an engine to load its verified prediction, SHAP contributions and retrieved guidance.</p>
+            </div>
+            <form class="copilot-form" id="copilot-form">
+              <label for="copilot-question">Ask about this engine</label>
+              <textarea id="copilot-question" maxlength="500" rows="3" placeholder="Example: What should a reliability engineer review first?"></textarea>
+              <div class="form-footer">
+                <span><i></i> Local grounded generator</span>
+                <button type="submit" class="primary-button" id="generate-brief" disabled><span class="button-label">Generate cited brief</span><span aria-hidden="true">→</span></button>
+              </div>
+            </form>
+          </article>
+        </section>
+
+        <section class="panel retrieval-panel">
+          <div class="panel-heading">
+            <div><span class="eyebrow">Knowledge system</span><h2>Retrieval confidence</h2><p class="panel-subtitle">Measured against labeled in-domain questions.</p></div>
+            <span class="quality-badge"><i></i> Evaluation passed</span>
+          </div>
+          <div class="retrieval-metrics">
+            <div><span>Source library</span><strong id="metric-documents">—</strong><small>documents</small></div>
+            <div><span>Search index</span><strong id="metric-chunks">—</strong><small>citable chunks</small></div>
+            <div><span>Top-3 coverage</span><strong id="metric-hit">—</strong><small>Hit@3</small></div>
+            <div><span>Ranking quality</span><strong id="metric-mrr">—</strong><small>MRR</small></div>
+          </div>
+          <div class="retrieval-footer"><span id="knowledge-hash">Fingerprint —</span><p>Demonstration evidence, not approved maintenance documentation.</p></div>
+        </section>
+
+        <footer>
+          <span>AeroGuard AI · NASA C-MAPSS FD001 demonstration</span>
+          <div><span id="last-updated">Not synchronized</span><a href="/docs" target="_blank" rel="noreferrer">Open API docs <span>↗</span></a></div>
+        </footer>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
