@@ -115,5 +115,8 @@ def copilot(request: CopilotRequest) -> dict:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
 
+# Generated figures are intentionally excluded from Git. Create the empty mount
+# directory so a clean clone can import the API before any pipeline run.
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/figures", StaticFiles(directory=FIGURES_DIR), name="figures")
 app.mount("/", StaticFiles(directory=DASHBOARD_DIR, html=True), name="dashboard")
