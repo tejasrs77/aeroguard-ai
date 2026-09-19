@@ -1,6 +1,22 @@
-# AeroGuard AI
+<div align="center">
+
+# ✈️ AeroGuard AI
+
+### Explainable predictive maintenance and grounded reliability intelligence for aircraft engines
+
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-LSTM-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2?logo=mlflow&logoColor=white)](https://mlflow.org/)
+[![CI](https://github.com/tejasrs77/aeroguard-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/tejasrs77/aeroguard-ai/actions/workflows/ci.yml)
+[![Deploy on Render](https://img.shields.io/badge/Deploy-Render-46E3B7?logo=render&logoColor=black)](https://render.com/)
+
+</div>
 
 AeroGuard AI is an end-to-end predictive-maintenance system for aircraft engines. It uses NASA C-MAPSS sensor histories to estimate Remaining Useful Life (RUL), explain risk, and generate cited reliability summaries. The project is deliberately built as a production-style system rather than a single notebook.
+
+> [!CAUTION]
+> AeroGuard AI is a decision-support demonstration built with simulated NASA C-MAPSS data. It is not an airworthiness-certified system and must not be used as the sole basis for real aircraft maintenance or safety decisions.
 
 ## Current status
 
@@ -42,6 +58,57 @@ Unexpected equipment failure is expensive and potentially dangerous. AeroGuard t
 2. **Near-term risk classification:** is failure expected within the next 30 cycles?
 
 The numerical prediction comes from trained ML models. The RAG/generation layer explains verified model evidence; it cannot invent or replace the prediction.
+
+## System architecture
+
+```mermaid
+flowchart LR
+    NASA["NASA C-MAPSS<br/>FD001 archive"] --> VALIDATE["Download, checksum<br/>and validation"]
+    VALIDATE --> FEATURES["RUL labels, features<br/>and engine-group split"]
+
+    FEATURES --> RF["Random Forest<br/>deployment champion"]
+    FEATURES --> LSTM["PyTorch LSTM<br/>accuracy candidate"]
+    RF --> MLFLOW["MLflow experiments<br/>and model artifacts"]
+    LSTM --> MLFLOW
+    RF --> SHAP["TreeSHAP<br/>global + local evidence"]
+
+    DOCS["Reliability<br/>knowledge base"] --> INDEX["TF-IDF index<br/>fingerprinted chunks"]
+    SHAP --> EVIDENCE["Verified engine<br/>evidence packet"]
+    MLFLOW --> EVIDENCE
+    INDEX --> RETRIEVE["Evidence-aware<br/>retrieval"]
+    EVIDENCE --> RETRIEVE
+    RETRIEVE --> GEN["Grounded generator<br/>local or OpenAI"]
+    GEN --> VALIDATE_OUT["Protected fields<br/>and citation validation"]
+
+    VALIDATE_OUT --> API["FastAPI service"]
+    MLFLOW --> API
+    API --> UI["Operations dashboard<br/>fleet triage + drill-down"]
+    API --> HEALTH["Health, OpenAPI<br/>and request tracing"]
+
+    CI["GitHub Actions"] --> TESTS["Automated test suite"]
+    TESTS --> API
+    RENDER["Render blueprint"] --> API
+
+    classDef data fill:#e8f3ff,stroke:#1677ff,color:#102a43
+    classDef model fill:#e9f7ef,stroke:#238636,color:#123b20
+    classDef safety fill:#fff3cd,stroke:#d39e00,color:#4a3b00
+    classDef delivery fill:#f3e8ff,stroke:#7c3aed,color:#2e1065
+    class NASA,VALIDATE,FEATURES,DOCS,INDEX data
+    class RF,LSTM,MLFLOW,SHAP model
+    class EVIDENCE,RETRIEVE,GEN,VALIDATE_OUT safety
+    class API,UI,HEALTH,CI,TESTS,RENDER delivery
+```
+
+### End-to-end flow
+
+1. AeroGuard downloads and verifies the NASA C-MAPSS archive.
+2. The pipeline validates FD001, constructs capped RUL labels, and splits data by engine to prevent leakage.
+3. Random Forest and LSTM models are trained and evaluated; MLflow records their parameters, metrics, and artifacts.
+4. TreeSHAP explains the deployed Random Forest prediction, while the RAG layer retrieves relevant reliability guidance.
+5. The generator creates a cited brief from verified evidence and an allowlisted set of sources.
+6. FastAPI serves fleet metrics, model comparisons, engine briefs, and the static operations dashboard.
+
+For the complete pipeline and governance boundaries, see [docs/architecture.md](docs/architecture.md).
 
 ## Dataset
 
@@ -143,7 +210,67 @@ Day 5 creates `reports/day5_summary.json`, verifies that all earlier artifacts a
 
 On Windows, `run_day5.ps1` safely handles a stale AeroGuard process, starts the server, waits for a healthy response and opens the dashboard. Open `http://127.0.0.1:8000`; API docs are at `http://127.0.0.1:8000/docs`. Press `Ctrl+C` to stop it. On macOS/Linux, use `make app`.
 
-`render.yaml` is an optional cloud blueprint, not a claim that the project is deployed. It defaults to the offline local generator and needs an appropriate Render account and compute plan before use.
+## API endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Reports required artifact availability and readiness |
+| `GET` | `/api/overview` | Returns dataset, fleet, model, and retrieval summaries |
+| `GET` | `/api/models` | Returns Random Forest and LSTM evaluation metrics |
+| `GET` | `/api/retrieval` | Returns retrieval quality metrics and evaluation cases |
+| `GET` | `/api/engines` | Provides filtered, sorted, paginated engine records |
+| `GET` | `/api/engines/{engine_id}/brief` | Returns a grounded reliability brief for one engine |
+| `POST` | `/api/copilot` | Answers an engine-specific question using verified evidence |
+
+Interactive OpenAPI documentation is available at `http://127.0.0.1:8000/docs` while the service is running.
+
+## Cloud deployment with Render
+
+The repository includes `render.yaml`, an opt-in deployment blueprint for a health-checked Uvicorn web service. It uses the deterministic local generator by default, so an external LLM key is not required.
+
+> [!IMPORTANT]
+> The blueprint documents a deployment path; the repository does not claim that a public production service is currently running.
+
+### Deployment flow
+
+```mermaid
+flowchart LR
+    GH["GitHub repository"] -->|"Manual deploy"| BUILD["Render build<br/>pip install -e ."]
+    BUILD --> PIPE["Generate Day 5<br/>required artifacts"]
+    PIPE --> WEB["Uvicorn<br/>AeroGuard FastAPI"]
+    WEB --> DASH["Static operations<br/>dashboard"]
+    WEB --> DOCS["OpenAPI docs"]
+    WEB --> HEALTH["/api/health"]
+    USER["Browser / API client"] --> WEB
+```
+
+### Deploy
+
+1. Fork or connect this repository to a Render account.
+2. Create a new **Blueprint** and select the repository.
+3. Review the service settings from `render.yaml`.
+4. Select a compute plan with enough memory and build time for PyTorch, XGBoost, SHAP, and artifact generation.
+5. Deploy the service and wait for `/api/health` to report `ready: true`.
+
+The blueprint runs:
+
+```text
+Build: pip install -e . && python -m aeroguard.cli day5
+Start: uvicorn aeroguard.api.main:app --host 0.0.0.0 --port $PORT
+Health: /api/health
+```
+
+### Optional OpenAI generation
+
+Offline deterministic generation is the safe default. To enable optional OpenAI wording, configure these environment variables in Render rather than committing them:
+
+```dotenv
+AEROGUARD_GENERATOR=openai
+OPENAI_API_KEY=your_api_key
+AEROGUARD_OPENAI_MODEL=your_supported_model
+```
+
+Never commit a real `.env` file or API key. Keep `AEROGUARD_GENERATOR=local` when external generation is unnecessary.
 
 ## Repository structure
 
